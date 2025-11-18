@@ -62,8 +62,13 @@ const UserData = {
     id:1,name:"Che", 
     email:"chefernandez@gmail.com", 
     registrationDate:"11/10/25"};
-setTimeout(()=> resolve(UserData),1000);
-})
+
+    if(UserData){
+    setTimeout(()=>resolve(UserData),1500);
+    }else{
+        reject("User data not found");
+    }
+});
 }
 
 function fetchPosts (){
@@ -73,11 +78,15 @@ const UserPosts ={
     content:"my first post",
     userId:"012360000"}
 
-    setTimeout(()=>resolve(UserPosts),1000);
+    if(UserPosts){
+    setTimeout(()=>resolve(UserPosts),1500);
+    }else{
+        reject("User posts not found");
+    }
     });
     
 }
-Promise.all([fetchUser(),fetchPosts(1)])
+Promise.all([fetchUser(),fetchPosts()])
 .then(([user,posts]) => {
     const combined = {user,posts};
     console.log(combined, ("combined successful"))
@@ -86,10 +95,28 @@ Promise.all([fetchUser(),fetchPosts(1)])
 .catch((message)=>{
 console.log("Error " + message)
 })
+
 // TODO: Convert the above Promise chain to use async/await 
 // - Use try/catch for error handling 
 // - Log each step of the process 
 // - Return combined user and posts data 
+async function fetchData() {
+    try{
+  
+    console.log("Awaiting fetchUser()...");
+    const user = await fetchUser();
+    console.log("User fetched: ", user);
+
+    console.log("Awaiting fetchPosts()...");
+    const posts = await fetchPosts();
+    console.log("Posts fetched: ", posts);
+    
+    }
+    catch (error){
+        console.log("Error " + error)
+    }
+}
+fetchData();
 
 // TODO: Create a function that fetches multiple users in parallel 
 // - Take an array of userIds 
@@ -97,13 +124,46 @@ console.log("Error " + message)
 // - Handle errors for individual user fetches 
 // - Return array of successfully fetched users 
 
+async function fetchMultipleUsers(userIds) {
+    const userPromises = userIds.map(id => fetchUser(id).catch(error => ({ error })));
+    const results = await Promise.all(userPromises);
+    return results.filter(result => !result.error);
+}
+
 // TODO: Create a function that fetches users and their posts in parallel 
 // - Fetch user data for multiple users 
 // - Once user data is received, fetch all their posts in parallel 
 // - Combine user and posts data 
 // - Handle errors appropriately 
 
+async function fetchUsersAndPosts(userIds) {
+    try {
+        const users = await fetchMultipleUsers(userIds);    
+        const userPostsPromises = users.map(user => 
+            fetchPosts(user.id)
+                .then(posts => ({ user, posts }))   
+                .catch(error => ({ user, error }))
+        );
+        const usersWithPosts = await Promise.all(userPostsPromises);
+        return usersWithPosts;
+    } catch (error) {
+        console.log("Error fetching users and posts: ", error);
+    }
+}
+
 // TODO: Test success cases 
 // - Test single user fetch 
 // - Test multiple user fetch 
 // - Test error handling
+// fetchData().then(result => {
+//     console.log("All done:", result);
+// }).catch(error => {
+//     console.log("Error occurred:", error);
+// });
+
+
+fetchData().then(result => {    
+    console.log("All done:", result);
+}).catch(error => {
+    console.log("Error occurred:", error);
+});
