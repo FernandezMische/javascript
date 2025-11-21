@@ -1,0 +1,17 @@
+body{
+    font-family: Arial, sans-serif;
+    background-color: #8665e0;
+    margin: 0;
+    padding: 0;
+}
+.btn-primary{
+    
+    color: white;
+    padding: 10px 20px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
